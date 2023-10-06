@@ -24,8 +24,5 @@ Note: The `--vcs=none` argument is not needed if using this repo's codespace as 
 ### Please update the README.md that will be default created in your tool's directory.  
 Add any relevant information to help the user build or use your tool.
 
-### Do not add the compiled tool to the repo.
-I may create a releases folder in the future for binaries.  Any suggestions on a best-practice approach would be welcome.
-
 ### Try to follow the *nix philosophy for tools
 It is simple - a tool should in prinicple do one thing and do it well.

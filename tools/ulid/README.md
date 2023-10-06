@@ -9,7 +9,7 @@ This tool is written in Rust.  An assumption is being made that you have rust in
 
 Clone a copy of the repo.  If you are only going to be doing a compile of the tool and dicarding the repo you clone afterwards you can do a shallow clone.
 
-```
+```bash
 ## EXAMPLES:
 ## Example 1:
 # clone the `ulid-v1.0` release (assuming you want to compile against a specific version)
@@ -27,12 +27,12 @@ git clone --depth 1 https://github.com/PHACDataHub/rust-tools
 
 To build the tool, you should `cd` into the `ulid` directory
 
-```
+```bash
 cd /workspaces/tools/tools/ulid
 ```
 
 Then run the build command for either a debug build or a release build:
-```
+```bash
 # debug build
 cargo build
 
@@ -44,7 +44,7 @@ cargo build --release
 
 You can actually build this ulid tool to be used in a container quite easily using a multi-stage build.
 
-```
+```dockerfile
 FROM mcr.microsoft.com/devcontainers/rust:1-1-bullseye AS ulid_tool
 WORKDIR /app
 # specify the release tag (-b 'ulid-v1.0') so we aren't running against latest.

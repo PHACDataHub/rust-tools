@@ -40,9 +40,7 @@ cargo build
 cargo build --release
 ```
 
-This tool is meant to be access in this devcontainer in an alias.  I have had no luck in creating an alias that works to access it in this directory path.  So, I have created a two line build script that will do a release build and copy the ulid executable into the `.devcontainer/library-scripts` directory where the Dockerfile will be able to copy it to a location that will work for an alias mapping (in the `vscode` user's directory).
-
-## Building this tool from a Dockerfile to be used in a container.
+## Building this tool from a Dockerfile to be used in a container (part of multi-stage build).
 
 You can actually build this ulid tool to be used in a container quite easily using a multi-stage build.
 

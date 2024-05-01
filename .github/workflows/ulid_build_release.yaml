@@ -12,15 +12,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' }}  # Allow manual triggering
-    env:
-      IS_PROD: ${{ contains(github.event.pull_request.head.ref, 'prod') }}
-      VERSION_NUMBER: ${{ github.run_number }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2  # Add back the checkout step
         with:
-          ref: 'refs/heads/main'  # Ensures the main branch is checked out after merge
+          ref: ${{ github.ref }}  # Checkout the current Git reference, including tags
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -35,24 +32,14 @@ jobs:
           cargo build --release --verbose
           cargo test --verbose
 
-      - name: Debug Info
-        run: |
-          echo "IS_PROD: ${{ env.IS_PROD }}"
-          echo "Branch: ${{ github.event.pull_request.head.ref }}"
-
-      - name: Write File Suffix to Environment File
-        run: echo "FILE_SUFFIX=${{ env.IS_PROD && '' || '-beta' }}" >> $GITHUB_ENV
-
-      - name: Rename Binary
-
-        if: ${{ env.FILE_SUFFIX != '' }}
-        run: |
-          mv tools/ulid/target/release/ulid tools/ulid/target/release/ulid${{ env.FILE_SUFFIX }}
+      - name: Determine Tag Name
+        id: get_tag
+        run: echo "::set-output name=tag_name::$(git describe --tags --abbrev=0)"
 
       - name: Archive Binary
         run: |
           cd tools/ulid/target/release
-          zip ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip ulid${{ env.FILE_SUFFIX }}
+          zip ulid-${{ steps.get_tag.outputs.tag_name }}.zip ulid
 
       - name: Create Release
         id: create_release
@@ -60,10 +47,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}  # Adjust tag_name based on FILE_SUFFIX
-          release_name: ULID Release v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}  # Adjust release_name based on FILE_SUFFIX
+          tag_name: ${{ steps.get_tag.outputs.tag_name }}
+          release_name: ULID Release ${{ steps.get_tag.outputs.tag_name }}
           draft: false
-          prerelease: ${{ env.IS_PROD == 'false' }}
+          prerelease: ${{ startsWith(steps.get_tag.outputs.tag_name, 'v') }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
@@ -71,6 +58,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./tools/ulid/target/release/ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip  # Adjust asset_path based on FILE_SUFFIX
-          asset_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip
+          asset_path: ./tools/ulid/target/release/ulid-${{ steps.get_tag.outputs.tag_name }}.zip
+          asset_name: ulid-${{ steps.get_tag.outputs.tag_name }}.zip
           asset_content_type: application/zip

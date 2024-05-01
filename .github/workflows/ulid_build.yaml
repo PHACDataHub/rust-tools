@@ -1,10 +1,9 @@
 name: ULID Tool Build
 
 on:
-  push:
-    paths:
-      - 'rust-tools/tools/ulid/**'
   pull_request:
+    branches:
+      - main
     paths:
       - 'rust-tools/tools/ulid/**'
 

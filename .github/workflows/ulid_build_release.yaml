@@ -1,6 +1,7 @@
 name: ULID Tool Build and Release
 
 on:
+  workflow_dispatch:  # Manually trigger the workflow
   pull_request_target:
     branches:
       - main

@@ -1,9 +1,10 @@
 name: ULID Tool Build
 
 on:
+  push:
+    paths:
+      - 'tools/ulid/**'
   pull_request:
-    branches:
-      - main
     paths:
       - 'tools/ulid/**'
 

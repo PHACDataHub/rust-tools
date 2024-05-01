@@ -1,0 +1,50 @@
+name: ULID Tool Build and Release
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: 'refs/heads/main'  # Ensures the main branch is checked out after merge
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Build and Test ULID Tool
+        run: |
+          cd tools/ulid
+          cargo build --release --verbose
+          cargo test --verbose
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ulid-v${{ github.run_number }}  # You can modify this to match your tagging strategy
+          release_name: ULID Release ${{ github.run_number }}
+          draft: false
+          prerelease: true
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./tools/ulid/target/release/ulid
+          asset_name: ulid
+          asset_content_type: application/octet-stream

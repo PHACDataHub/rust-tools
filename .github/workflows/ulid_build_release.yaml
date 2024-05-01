@@ -14,7 +14,8 @@ jobs:
     env:
       IS_PROD: ${{ contains(github.event.pull_request.head.ref, 'prod') }}
       VERSION_NUMBER: ${{ github.run_number }}
-      FILE_SUFFIX: ${{ contains(github.event.pull_request.head.ref, 'prod') && '' || '-beta' }}
+      FILE_SUFFIX: ${{ env.IS_PROD && '' || '-beta' }}  # Adjust FILE_SUFFIX based on IS_PROD
+      
     steps:
       - uses: actions/checkout@v2
         with:
@@ -50,13 +51,13 @@ jobs:
           zip ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip ulid${{ env.FILE_SUFFIX }}
 
       - name: Create Release
-        id: create_release  # Ensure this ID is correctly set to reference in later steps
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}
-          release_name: ULID Release v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}
+          tag_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}  # Adjust tag_name based on FILE_SUFFIX
+          release_name: ULID Release v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}  # Adjust release_name based on FILE_SUFFIX
           draft: false
           prerelease: ${{ !env.IS_PROD }}
 
@@ -65,7 +66,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}  # Correctly reference the output of the create_release step
-          asset_path: ./tools/ulid/target/release/ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./tools/ulid/target/release/ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip  # Adjust asset_path based on FILE_SUFFIX
           asset_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip
           asset_content_type: application/zip

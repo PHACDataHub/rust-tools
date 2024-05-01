@@ -36,6 +36,7 @@ jobs:
         id: get_tag
         run: echo "::set-output name=tag_name::$(git describe --tags --abbrev=0)"
 
+
       - name: Archive Binary
         run: |
           cd tools/ulid/target/release

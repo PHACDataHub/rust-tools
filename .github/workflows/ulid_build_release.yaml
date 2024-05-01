@@ -43,6 +43,7 @@ jobs:
       - name: Write File Suffix to Environment File
         run: echo "FILE_SUFFIX=${{ env.IS_PROD && '' || '-beta' }}" >> $GITHUB_ENV
 
+
       - name: Rename Binary
 
         if: ${{ env.FILE_SUFFIX != '' }}

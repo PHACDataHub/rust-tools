@@ -18,7 +18,8 @@ jobs:
       FILE_SUFFIX: ${{ steps.set_file_suffix.outputs.file_suffix }}
 
     steps:
-      - uses: actions/checkout@v2  # Add back the checkout step
+      - name: Checkout code
+        uses: actions/checkout@v2  # Add back the checkout step
         with:
           ref: 'refs/heads/main'  # Ensures the main branch is checked out after merge
 
@@ -46,7 +47,7 @@ jobs:
         run: echo "::set-output name=file_suffix::${{ env.IS_PROD && '' || '-beta' }}"
 
       - name: Rename Binary
-        if: steps.set_file_suffix.outputs.file_suffix != ''
+        if: ${{ steps.set_file_suffix.outputs.file_suffix != '' }}
         run: |
           mv tools/ulid/target/release/ulid tools/ulid/target/release/ulid${{ env.FILE_SUFFIX }}
 

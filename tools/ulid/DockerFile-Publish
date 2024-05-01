@@ -1,0 +1,11 @@
+# Use an official lightweight base image.
+FROM alpine:latest
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the compiled binary.
+COPY ulid /app/ulid
+
+# Make the binary executable.
+RUN chmod +x /app/ulid

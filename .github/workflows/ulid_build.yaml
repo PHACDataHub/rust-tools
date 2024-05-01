@@ -2,9 +2,9 @@ name: ULID Tool Build
 
 on:
   push:
-    paths:
-      - 'tools/ulid/**'
-  pull_request:
+    branches:
+      - '*'
+      - '!main' # Exclude the main branch
     paths:
       - 'tools/ulid/**'
 

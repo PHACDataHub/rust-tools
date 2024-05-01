@@ -29,6 +29,11 @@ jobs:
           cargo build --release --verbose
           cargo test --verbose
 
+      - name: Archive Binary
+        run: |
+          cd tools/ulid/target/release
+          zip ulid-${{ github.run_number }}.zip ulid
+
       - name: Create Release
         uses: actions/create-release@v1
         env:
@@ -45,6 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./tools/ulid/target/release/ulid
-          asset_name: ulid
-          asset_content_type: application/octet-stream
+          asset_path: ./tools/ulid/target/release/ulid-${{ github.run_number }}.zip
+          asset_name: ulid-${{ github.run_number }}.zip
+          asset_content_type: application/zip

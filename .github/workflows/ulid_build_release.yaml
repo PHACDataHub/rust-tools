@@ -11,6 +11,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
+    env:
+      IS_BETA: ${{ contains(github.head_ref, 'beta') }}
+      VERSION_NUMBER: ${{ github.run_number }}
+      VERSION_TAG: ${{ github.head_ref }}
+      FILE_SUFFIX: ${{ contains(github.head_ref, 'beta') && '-beta' || '' }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -29,28 +34,31 @@ jobs:
           cargo build --release --verbose
           cargo test --verbose
 
+      - name: Rename Binary
+        run: |
+          mv tools/ulid/target/release/ulid tools/ulid/target/release/ulid${{ env.FILE_SUFFIX }}
+
       - name: Archive Binary
         run: |
           cd tools/ulid/target/release
-          zip ulid-${{ github.run_number }}.zip ulid
+          zip ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip ulid${{ env.FILE_SUFFIX }}
 
       - name: Create Release
-        id: create_release  # Ensure this ID is set correctly
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ulid-v${{ github.run_number }}
-          release_name: ULID Release ${{ github.run_number }}
+          tag_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}
+          release_name: ULID Release v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}
           draft: false
-          prerelease: true
+          prerelease: ${{ env.IS_BETA }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}  # Use the output from the create-release step
-          asset_path: ./tools/ulid/target/release/ulid-${{ github.run_number }}.zip
-          asset_name: ulid-${{ github.run_number }}.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./tools/ulid/target/release/ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip
+          asset_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip
           asset_content_type: application/zip

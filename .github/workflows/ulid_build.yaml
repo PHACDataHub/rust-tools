@@ -1,11 +1,12 @@
 name: ULID Tool Build
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
     paths:
-      - 'rust-tools/tools/ulid/**'
+      - 'tools/ulid/**'
+  pull_request:
+    paths:
+      - 'tools/ulid/**'
 
 jobs:
   build:
@@ -23,10 +24,10 @@ jobs:
 
     - name: Build ULID Tool
       run: |
-        cd rust-tools/tools/ulid
+        cd tools/ulid
         cargo build --verbose
 
     - name: Run Tests
       run: |
-        cd rust-tools/tools/ulid
+        cd tools/ulid
         cargo test --verbose

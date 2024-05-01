@@ -1,6 +1,5 @@
 
 # ULID tool
-
 This tool is used so that we don't have to rely on a call to a webservice that may not be available.  It is implemented in [Rust](https://www.rust-lang.org/).
 
 ## Compiling the tool

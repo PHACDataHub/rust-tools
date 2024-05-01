@@ -44,6 +44,7 @@ jobs:
         run: echo "FILE_SUFFIX=${{ env.IS_PROD && '' || '-beta' }}" >> $GITHUB_ENV
 
       - name: Rename Binary
+
         if: ${{ env.FILE_SUFFIX != '' }}
         run: |
           mv tools/ulid/target/release/ulid tools/ulid/target/release/ulid${{ env.FILE_SUFFIX }}

@@ -1,0 +1,38 @@
+on:
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/ulid
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    # Ensure this runs only for releases not marked as prereleases and targeting production
+    if: ${{ !github.event.release.prerelease && contains(github.ref, 'prod') }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build the Docker image
+        run: |
+          docker build ./tools/ulid -f ./tools/ulid/DockerFile-Publish -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
+
+      - name: Push the Docker image to GitHub Packages
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
+
+      - name: Output image details
+        run: echo "Docker Image URL: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}"

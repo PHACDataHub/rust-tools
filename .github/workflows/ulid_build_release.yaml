@@ -12,10 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     env:
-      IS_BETA: ${{ contains(github.head_ref, 'beta') }}
+      IS_PROD: ${{ contains(github.event.pull_request.head.ref, 'prod') }}
       VERSION_NUMBER: ${{ github.run_number }}
-      VERSION_TAG: ${{ github.head_ref }}
-      FILE_SUFFIX: ${{ contains(github.head_ref, 'beta') && '-beta' || '' }}
+      FILE_SUFFIX: ${{ contains(github.event.pull_request.head.ref, 'prod') && '' || '-beta' }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -34,7 +33,14 @@ jobs:
           cargo build --release --verbose
           cargo test --verbose
 
+      - name: Debug Info
+        run: |
+          echo "FILE_SUFFIX: ${{ env.FILE_SUFFIX }}"
+          echo "IS_PROD: ${{ env.IS_PROD }}"
+          echo "Branch: ${{ github.event.pull_request.head.ref }}"
+
       - name: Rename Binary
+        if: env.FILE_SUFFIX != ''
         run: |
           mv tools/ulid/target/release/ulid tools/ulid/target/release/ulid${{ env.FILE_SUFFIX }}
 
@@ -51,7 +57,7 @@ jobs:
           tag_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}
           release_name: ULID Release v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}
           draft: false
-          prerelease: ${{ env.IS_BETA }}
+          prerelease: ${{ !env.IS_PROD }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1

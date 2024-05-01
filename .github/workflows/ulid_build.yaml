@@ -1,0 +1,33 @@
+name: ULID Tool Build
+
+on:
+  push:
+    paths:
+      - 'rust-tools/tools/ulid/**'
+  pull_request:
+    paths:
+      - 'rust-tools/tools/ulid/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Build ULID Tool
+      run: |
+        cd rust-tools/tools/ulid
+        cargo build --verbose
+
+    - name: Run Tests
+      run: |
+        cd rust-tools/tools/ulid
+        cargo test --verbose

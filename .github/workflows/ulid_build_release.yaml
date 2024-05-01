@@ -15,7 +15,6 @@ jobs:
     env:
       IS_PROD: ${{ contains(github.event.pull_request.head.ref, 'prod') }}
       VERSION_NUMBER: ${{ github.run_number }}
-      FILE_SUFFIX: ${{ steps.set_file_suffix.outputs.file_suffix }}
 
     steps:
       - name: Checkout code
@@ -38,16 +37,20 @@ jobs:
 
       - name: Debug Info
         run: |
-          echo "FILE_SUFFIX: ${{ env.FILE_SUFFIX }}"
           echo "IS_PROD: ${{ env.IS_PROD }}"
           echo "Branch: ${{ github.event.pull_request.head.ref }}"
 
       - name: Set File Suffix
         id: set_file_suffix
-        run: echo "::set-output name=file_suffix::${{ env.IS_PROD && '' || '-beta' }}"
+        run: |
+          if [[ ${{ env.IS_PROD }} == "true" ]]; then
+            echo "::set-env name=FILE_SUFFIX::"
+          else
+            echo "::set-env name=FILE_SUFFIX::-beta"
+          fi
 
       - name: Rename Binary
-        if: ${{ steps.set_file_suffix.outputs.file_suffix != '' }}
+        if: ${{ env.FILE_SUFFIX != '' }}
         run: |
           mv tools/ulid/target/release/ulid tools/ulid/target/release/ulid${{ env.FILE_SUFFIX }}
 
@@ -62,10 +65,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ulid-v${{ env.VERSION_NUMBER }}${{ steps.set_file_suffix.outputs.file_suffix }}  # Adjust tag_name based on FILE_SUFFIX
-          release_name: ULID Release v${{ env.VERSION_NUMBER }}${{ steps.set_file_suffix.outputs.file_suffix }}  # Adjust release_name based on FILE_SUFFIX
+          tag_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}  # Adjust tag_name based on FILE_SUFFIX
+          release_name: ULID Release v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}  # Adjust release_name based on FILE_SUFFIX
           draft: false
-          prerelease: ${{ !env.IS_PROD }}
+          prerelease: ${{ env.IS_PROD == 'false' }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
@@ -73,6 +76,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./tools/ulid/target/release/ulid-v${{ env.VERSION_NUMBER }}${{ steps.set_file_suffix.outputs.file_suffix }}.zip  # Adjust asset_path based on FILE_SUFFIX
-          asset_name: ulid-v${{ env.VERSION_NUMBER }}${{ steps.set_file_suffix.outputs.file_suffix }}.zip
+          asset_path: ./tools/ulid/target/release/ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip  # Adjust asset_path based on FILE_SUFFIX
+          asset_name: ulid-v${{ env.VERSION_NUMBER }}${{ env.FILE_SUFFIX }}.zip
           asset_content_type: application/zip
+

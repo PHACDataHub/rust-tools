@@ -5,7 +5,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// truncated - first 10 characters of the ulid (i.e. the timestamp)
+    /// truncated - first 11 characters of the ulid (i.e. the timestamp + 1 random char)
     #[arg(short, long, default_value_t = false)]
     short_ulid: bool,
 
